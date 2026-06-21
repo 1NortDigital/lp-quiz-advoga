@@ -166,9 +166,9 @@ const CONFIG = {
   valorTop: 100,
   currency: "BRL",
 
-  // QUALIFICAÇÃO: qualificado = passou nos 2 cortes (fatura >20k E investe >=1.200).
-  // Os cortes são os kills (faturamento "até 20k" e investimento "<1.200").
-  qualifyThreshold: 2,    // score mínimo de quem passou nos cortes (sempre >=2)
+  // QUALIFICAÇÃO: único corte é investimento < R$1.200 (kill). Investiu >=1.200 = qualificado,
+  // mesmo faturando <20k. Faturamento/advogados só pesam pra definir o lead TOP.
+  qualifyThreshold: 1,    // qualquer um sem kill investe >=1.200 (score sempre >=1)
   topThreshold:    7,     // lead TOP = qualificado com score alto (estrutura + grana)
 
   // WHATSAPP — lead qualificado cai direto na conversa com mensagem pronta.
@@ -229,10 +229,9 @@ const CONFIG = {
         {ic:"⚖️",t:"3 a 5 advogados",           s:2, next:"faturamento"},
         {ic:"🏛️",t:"6 ou mais advogados",       s:3, next:"faturamento"}
       ] },
-    /* corte: faturamento até R$ 20k = desqualificado (só >20k é bom) */
     { id:"faturamento", type:"single", title:"Faturamento mensal médio do escritório?",
       options:[
-        {ic:"🚫",t:"Até R$ 20 mil",          kill:true, s:0, next:"investimento"},
+        {ic:"🔹",t:"Até R$ 20 mil",          s:0, next:"investimento"},
         {ic:"🔸",t:"R$ 20 mil a R$ 50 mil",  s:1, next:"investimento"},
         {ic:"💎",t:"Acima de R$ 50 mil",     s:3, next:"investimento"}
       ] },
