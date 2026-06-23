@@ -156,9 +156,8 @@ const CONFIG = {
   pagina:     "lp-quiz-advoga-trabalhista",
 
   // EVENTOS — só disparam pro lead qualificado (score >= qualifyThreshold e sem kill switch)
-  eventoConversao: "AdvogaConversion",   // escritório qualificado
-  eventoTopTier:   "AdvogaLeadQuente",   // escritório estruturado (score alto)
-  eventoContato:   "Contato",
+  eventoConversao: "RespondiConversion",   // escritório qualificado
+  eventoContato:   "EndForm",
   pedirEmail:      true,
 
   // VALOR no evento (otimização por valor)
@@ -565,12 +564,8 @@ const CONFIG = {
     computeScore();
     // dispara pixel ANTES do delay, pra não perder se a pessoa fechar (#7/#8 condicional)
     if(lead.qualified===true){
-      if(lead.top){
-        fireEvent(CONFIG.eventoTopTier,   {value:CONFIG.valorTop, currency:CONFIG.currency});
-        fireEvent(CONFIG.eventoConversao, {value:CONFIG.valorTop, currency:CONFIG.currency}); // base também, pra manter o público "todos qualificados"
-      } else {
-        fireEvent(CONFIG.eventoConversao, {value:CONFIG.valorBom, currency:CONFIG.currency});
-      }
+      const val = lead.top ? CONFIG.valorTop : CONFIG.valorBom;
+      fireEvent(CONFIG.eventoConversao, {value:val, currency:CONFIG.currency});
     }
     sendWebhook(false);
     if(!quick && CONFIG.analisando && CONFIG.analisando.enabled) showAnalyzing(showSuccess);
