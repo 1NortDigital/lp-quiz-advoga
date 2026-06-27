@@ -123,7 +123,7 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 /* prova social — sessões grandes, sem card, tipografia serif */
 .sp-screen .q-title{font-family:'Playfair Display','Sora',serif;font-weight:700;letter-spacing:-.015em}
 .sp-items{display:flex;flex-direction:column;gap:0;margin:14px -22px 0}
-.sp-item{display:grid;grid-template-columns:1fr;gap:28px;padding:44px 22px;min-height:70vh;align-items:center;position:relative}
+.sp-item{display:grid;grid-template-columns:1fr;gap:24px;padding:32px 22px;min-height:58vh;align-items:center;position:relative}
 .sp-item + .sp-item::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:55%;height:1px;background:linear-gradient(90deg,transparent,rgba(253,216,53,.22),transparent)}
 .sp-media{position:relative;aspect-ratio:9/14;border-radius:20px;overflow:hidden;background:rgba(0,0,0,.4);cursor:pointer;max-width:360px;margin:0 auto;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06)}
 .sp-video,.sp-img{width:100%;height:100%;object-fit:cover;display:block}
@@ -131,11 +131,11 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .sp-play:hover{transform:translate(-50%,-50%) scale(1.08);background:rgba(253,216,53,.85);color:#0a0805}
 .sp-play.hidden{display:none}
 .sp-text{padding:8px 0}
-.sp-item-title{font-family:'Playfair Display','Sora',serif;color:#fff;font-weight:700;font-size:clamp(28px,5.5vw,40px);line-height:1.15;letter-spacing:-.015em;margin-bottom:16px}
+.sp-item-title{font-family:'Playfair Display','Sora',serif;color:var(--yellow);font-weight:700;font-size:clamp(28px,5.5vw,40px);line-height:1.15;letter-spacing:-.015em;margin-bottom:16px}
 .sp-item-desc{color:var(--txt-dim);font-size:clamp(16.5px,2.1vw,20px);line-height:1.55}
 @media(min-width:820px){
   .stage:has(.sp-screen) .wrap{max-width:1040px}
-  .sp-item{grid-template-columns:360px 1fr;gap:56px;padding:64px 22px;min-height:78vh}
+  .sp-item{grid-template-columns:360px 1fr;gap:56px;padding:48px 22px;min-height:62vh}
   .sp-item--reverse{grid-template-columns:1fr 360px}
   .sp-item--reverse .sp-media{order:2}
   .sp-item--reverse .sp-text{order:1}
@@ -232,7 +232,7 @@ const CONFIG = {
   socialProof: {
     enabled: true,
     eyebrow: "Antes de enviar seu diagnóstico",
-    title: "Olha o resultado real de 3 advogados trabalhistas, {nome}",
+    title: "{nome}, olha o resultado real de 3 advogados trabalhistas",
     sub: "Antes de finalizar, conhece quem já tá colhendo resultado com a 1Nort.",
     cta: "Enviar diagnóstico →",
     items: [
