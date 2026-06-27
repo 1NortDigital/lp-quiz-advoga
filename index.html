@@ -120,6 +120,25 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .modal p{color:var(--txt-dim);font-size:15px;line-height:1.6;margin-bottom:22px}
 .modal .btn{margin-top:0}
 
+/* prova social — antes de enviar diagnóstico */
+.sp-items{display:flex;flex-direction:column;gap:18px;margin-top:6px;margin-bottom:8px}
+.sp-item{display:grid;grid-template-columns:1fr;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;padding:12px}
+.sp-media{position:relative;aspect-ratio:9/14;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.4);cursor:pointer}
+.sp-video,.sp-img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.6);border:0;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
+.sp-play:hover{transform:translate(-50%,-50%) scale(1.08);background:rgba(253,216,53,.85);color:#0a0805}
+.sp-play.hidden{display:none}
+.sp-text{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:4px 6px 10px}
+.sp-item-title{color:#fff;font-weight:800;font-size:16px;line-height:1.25}
+.sp-item-desc{color:var(--txt-dim);font-size:14px;line-height:1.5}
+@media(min-width:820px){
+  .stage:has(.sp-screen) .wrap{max-width:760px}
+  .sp-item{grid-template-columns:230px 1fr;gap:22px;padding:16px;align-items:center}
+  .sp-item--reverse{grid-template-columns:1fr 230px}
+  .sp-item--reverse .sp-media{order:2}
+  .sp-item--reverse .sp-text{order:1}
+}
+
 @media(max-width:560px){
   .brand{top:14px} .logo{height:34px} .stage{padding:72px 18px 26px}
   .w-hero{height:clamp(150px,24vh,210px);margin-bottom:14px}
@@ -205,6 +224,26 @@ const CONFIG = {
     note:"Preencha o formulário de 30 segundos e tenha acesso ao método que já ajudou centenas de escritórios por todo o Brasil.",
     proof:"<b>+200 escritórios trabalhistas</b> de todo o Brasil",
     cta:"Começar →"
+  },
+
+  // PROVA SOCIAL — tela antes do submit final, só pra lead qualificado
+  socialProof: {
+    enabled: true,
+    eyebrow: "Antes de enviar seu diagnóstico",
+    title: "Olha o resultado real de 3 advogados trabalhistas, {nome}",
+    sub: "Antes de cair no nosso WhatsApp, conhece quem já tá colhendo resultado com a 1Nort.",
+    cta: "Enviar diagnóstico →",
+    items: [
+      { video:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/videos/depoimento-1.mp4",
+        title:"Dr. Leandro · Advogado Trabalhista",
+        desc:"7 contratos fechados em 3 semanas — investindo só R$ 26/dia no tráfego pago." },
+      { image:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/images/case-1.webp",
+        title:"Fábio Gil Advocacia · Trabalhista",
+        desc:"+30 contratos fechados no 3º mês de parceria. Alguns fechados em 2h após o lead chegar." },
+      { video:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/videos/depoimento-2.mp4",
+        title:"Dra. Mayara · Rosalen & Cordeiro",
+        desc:"Veio de frustração com outra agência. Hoje fecha contratos com leads qualificados da 1Nort." }
+    ]
   },
 
   steps: [
@@ -374,7 +413,7 @@ const CONFIG = {
           lead.pts[step.id]=opt.s||0;
           lead.kills[step.id]=opt.kill===true;   // corte (faturamento até 20k / investimento <1.200)
           setTimeout(()=>{
-            if(step.submit){ finish(); }                              // passo final → finaliza e redireciona
+            if(step.submit){ maybeShowSocialProof(); }                  // passo final → prova social (qualificado) ou finish
             else { stepHistory.push(currentId); render(opt.next); }
           },240);
         };
@@ -552,6 +591,56 @@ const CONFIG = {
         ${wppBtn}
       </div>`;
     }
+  }
+
+  /* ---- prova social antes do submit (só pra qualificado) ---- */
+  function maybeShowSocialProof(){
+    computeScore();
+    const sp = CONFIG.socialProof;
+    if(sp && sp.enabled && Array.isArray(sp.items) && sp.items.length && lead.qualified===true){
+      showSocialProof();
+    } else {
+      finish();
+    }
+  }
+
+  function showSocialProof(){
+    const sp = CONFIG.socialProof;
+    setProg(98);
+    host.innerHTML = `<div class="screen active sp-screen">
+      <div class="q-step">${sp.eyebrow||'Antes de enviar seu diagnóstico'}</div>
+      <div class="q-title">${px(sp.title||'')}</div>
+      ${sp.sub?`<div class="q-sub">${px(sp.sub)}</div>`:''}
+      <div class="sp-items">${sp.items.map(spItemHtml).join('')}</div>
+      <button class="btn" id="okBtn">${sp.cta||'Enviar diagnóstico →'}</button>
+    </div>`;
+    bindSpVideos();
+    document.getElementById('okBtn').onclick = ()=>finish();
+  }
+
+  function spItemHtml(it, i){
+    const reverse = i%2===1 ? ' sp-item--reverse' : '';
+    const media = it.video
+      ? `<div class="sp-media"><video class="sp-video" src="${it.video}" muted loop autoplay playsinline preload="metadata"></video><button class="sp-play" type="button" aria-label="Reproduzir com som">▶</button></div>`
+      : `<div class="sp-media"><img class="sp-img" src="${it.image}" alt="${(it.title||'').replace(/"/g,'&quot;')}" loading="lazy"></div>`;
+    const text = `<div class="sp-text"><div class="sp-item-title">${it.title}</div><div class="sp-item-desc">${it.desc}</div></div>`;
+    return `<article class="sp-item${reverse}">${media}${text}</article>`;
+  }
+
+  function bindSpVideos(){
+    host.querySelectorAll('.sp-media').forEach(m=>{
+      const v = m.querySelector('video');
+      const btn = m.querySelector('.sp-play');
+      if(!v || !btn) return;
+      const toggle = ()=>{
+        host.querySelectorAll('.sp-video').forEach(ov=>{ if(ov!==v){ ov.muted=true; ov.pause(); }});
+        host.querySelectorAll('.sp-play').forEach(b=>{ if(b!==btn) b.classList.remove('hidden'); });
+        if(v.muted){ v.muted=false; v.currentTime=0; v.play(); btn.classList.add('hidden'); }
+        else { v.muted=true; v.pause(); btn.classList.remove('hidden'); }
+      };
+      btn.addEventListener('click', toggle);
+      v.addEventListener('click', toggle);
+    });
   }
 
   function finish(quick){
