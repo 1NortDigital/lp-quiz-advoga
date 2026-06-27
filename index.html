@@ -7,7 +7,7 @@
 <title>Diagnóstico 1Nort · Advocacia Trabalhista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Playfair+Display:wght@700;900&family=Sora:wght@700;800&display=swap" rel="stylesheet"/>
 <link rel="preload" as="image" href="hero-welcome.webp" type="image/webp"/>
 
 <!-- ===================== META PIXEL (base) ===================== -->
@@ -120,21 +120,23 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .modal p{color:var(--txt-dim);font-size:15px;line-height:1.6;margin-bottom:22px}
 .modal .btn{margin-top:0}
 
-/* prova social — antes de enviar diagnóstico */
-.sp-items{display:flex;flex-direction:column;gap:18px;margin-top:6px;margin-bottom:8px}
-.sp-item{display:grid;grid-template-columns:1fr;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;padding:12px}
-.sp-media{position:relative;aspect-ratio:9/14;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.4);cursor:pointer}
+/* prova social — sessões grandes, sem card, tipografia serif */
+.sp-screen .q-title{font-family:'Playfair Display','Sora',serif;font-weight:700;letter-spacing:-.015em}
+.sp-items{display:flex;flex-direction:column;gap:0;margin:14px -22px 0}
+.sp-item{display:grid;grid-template-columns:1fr;gap:28px;padding:44px 22px;min-height:70vh;align-items:center;position:relative}
+.sp-item + .sp-item::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:55%;height:1px;background:linear-gradient(90deg,transparent,rgba(253,216,53,.22),transparent)}
+.sp-media{position:relative;aspect-ratio:9/14;border-radius:20px;overflow:hidden;background:rgba(0,0,0,.4);cursor:pointer;max-width:360px;margin:0 auto;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06)}
 .sp-video,.sp-img{width:100%;height:100%;object-fit:cover;display:block}
-.sp-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.6);border:0;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
+.sp-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:rgba(0,0,0,.6);border:0;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
 .sp-play:hover{transform:translate(-50%,-50%) scale(1.08);background:rgba(253,216,53,.85);color:#0a0805}
 .sp-play.hidden{display:none}
-.sp-text{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:4px 6px 10px}
-.sp-item-title{color:#fff;font-weight:800;font-size:16px;line-height:1.25}
-.sp-item-desc{color:var(--txt-dim);font-size:14px;line-height:1.5}
+.sp-text{padding:8px 0}
+.sp-item-title{font-family:'Playfair Display','Sora',serif;color:#fff;font-weight:700;font-size:clamp(28px,5.5vw,40px);line-height:1.15;letter-spacing:-.015em;margin-bottom:16px}
+.sp-item-desc{color:var(--txt-dim);font-size:clamp(16.5px,2.1vw,20px);line-height:1.55}
 @media(min-width:820px){
-  .stage:has(.sp-screen) .wrap{max-width:760px}
-  .sp-item{grid-template-columns:230px 1fr;gap:22px;padding:16px;align-items:center}
-  .sp-item--reverse{grid-template-columns:1fr 230px}
+  .stage:has(.sp-screen) .wrap{max-width:1040px}
+  .sp-item{grid-template-columns:360px 1fr;gap:56px;padding:64px 22px;min-height:78vh}
+  .sp-item--reverse{grid-template-columns:1fr 360px}
   .sp-item--reverse .sp-media{order:2}
   .sp-item--reverse .sp-text{order:1}
 }
@@ -238,6 +240,7 @@ const CONFIG = {
         title:"Dr. Leandro · Advogado Trabalhista",
         desc:"7 contratos fechados em 3 semanas — investindo só R$ 26/dia no tráfego pago." },
       { image:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/images/case-1.webp",
+        imagePosition:"right center",
         title:"Fábio Gil Advocacia · Trabalhista",
         desc:"+30 contratos fechados no 3º mês de parceria. Alguns fechados em 2h após o lead chegar." },
       { video:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/videos/depoimento-2.mp4",
@@ -620,9 +623,10 @@ const CONFIG = {
 
   function spItemHtml(it, i){
     const reverse = i%2===1 ? ' sp-item--reverse' : '';
+    const imgStyle = it.imagePosition ? ` style="object-position:${it.imagePosition}"` : '';
     const media = it.video
       ? `<div class="sp-media"><video class="sp-video" src="${it.video}" muted loop autoplay playsinline preload="metadata"></video><button class="sp-play" type="button" aria-label="Reproduzir com som">▶</button></div>`
-      : `<div class="sp-media"><img class="sp-img" src="${it.image}" alt="${(it.title||'').replace(/"/g,'&quot;')}" loading="lazy"></div>`;
+      : `<div class="sp-media"><img class="sp-img" src="${it.image}" alt="${(it.title||'').replace(/"/g,'&quot;')}"${imgStyle} loading="lazy"></div>`;
     const text = `<div class="sp-text"><div class="sp-item-title">${it.title}</div><div class="sp-item-desc">${it.desc}</div></div>`;
     return `<article class="sp-item${reverse}">${media}${text}</article>`;
   }
