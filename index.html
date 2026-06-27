@@ -231,7 +231,7 @@ const CONFIG = {
     enabled: true,
     eyebrow: "Antes de enviar seu diagnóstico",
     title: "Olha o resultado real de 3 advogados trabalhistas, {nome}",
-    sub: "Antes de cair no nosso WhatsApp, conhece quem já tá colhendo resultado com a 1Nort.",
+    sub: "Antes de finalizar, conhece quem já tá colhendo resultado com a 1Nort.",
     cta: "Enviar diagnóstico →",
     items: [
       { video:"https://1nortdigital.github.io/proposta-1nort-advoga/assets/videos/depoimento-1.mp4",
@@ -593,11 +593,11 @@ const CONFIG = {
     }
   }
 
-  /* ---- prova social antes do submit (só pra qualificado) ---- */
+  /* ---- prova social antes do submit (todos os leads) ---- */
   function maybeShowSocialProof(){
     computeScore();
     const sp = CONFIG.socialProof;
-    if(sp && sp.enabled && Array.isArray(sp.items) && sp.items.length && lead.qualified===true){
+    if(sp && sp.enabled && Array.isArray(sp.items) && sp.items.length){
       showSocialProof();
     } else {
       finish();
