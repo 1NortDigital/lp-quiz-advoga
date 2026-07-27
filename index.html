@@ -44,9 +44,9 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .greet{font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:6px;letter-spacing:.01em}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px}
 .eyebrow::before{content:'';width:24px;height:2px;background:var(--yellow);border-radius:2px}
-.w-title{font-size:clamp(23px,4.4vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:12px}
+.w-title{font-size:clamp(27px,5.5vw,42px);font-weight:800;line-height:1.22;letter-spacing:-.02em;margin-bottom:20px}
 .w-title em{color:var(--yellow);font-style:normal}
-.w-sub{font-size:clamp(14px,1.8vw,16px);color:var(--txt-dim);line-height:1.65;margin-bottom:14px}
+.w-sub{font-size:clamp(16px,2.2vw,18.5px);color:var(--txt-dim);line-height:1.75;margin-bottom:22px}
 .w-sub b{color:#fff;font-weight:700}
 .w-note{font-size:14px;color:var(--txt-faint);line-height:1.65;margin-bottom:0}
 
@@ -146,9 +146,9 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
   .brand{top:10px} .logo{height:30px} .stage{padding:56px 16px 18px}
   .w-hero{height:clamp(170px,24vh,210px);margin-bottom:10px}
   .q-hero{height:clamp(180px,24vh,220px);margin-bottom:10px;object-position:center 15%}
-  .w-title{font-size:clamp(20px,5.2vw,26px);margin-bottom:8px}
-  .w-sub{font-size:14px;line-height:1.55;margin-bottom:10px}
-  .greet{font-size:13px;margin-bottom:4px}
+  .w-title{font-size:clamp(25px,6.5vw,32px);margin-bottom:14px;line-height:1.2}
+  .w-sub{font-size:16px;line-height:1.7;margin-bottom:16px}
+  .greet{font-size:14px;margin-bottom:6px}
   .btn{margin-top:8px;padding:14px}
   .proof{margin-top:10px;padding-top:8px;font-size:12px}
 }
@@ -578,10 +578,21 @@ const CONFIG = {
   function buildWhatsappLink(){
     const num=(CONFIG.whatsapp&&CONFIG.whatsapp.number||'').replace(/\D/g,'');
     if(!num) return '';
-    let msg=px(CONFIG.whatsapp.msg||'');
-    if(lead.respostas.desafio && CONFIG.whatsapp.msgDesafio) msg += px(CONFIG.whatsapp.msgDesafio);
-    msg += ' 🚀';
-    return 'https://wa.me/'+num+'?text='+encodeURIComponent(msg);
+    const r = lead.respostas || {};
+    const linhas = [ px(CONFIG.whatsapp.msg||'') ];
+    const diag = [];
+    if(r.desafio)      diag.push('• Maior desafio: ' + r.desafio);
+    if(r.advogados)    diag.push('• Advogados no escritório: ' + r.advogados);
+    if(r.contratos)    diag.push('• Contratos novos por mês: ' + r.contratos);
+    if(r.investimento) diag.push('• Investimento em tráfego: ' + r.investimento);
+    if(diag.length){
+      linhas.push('');
+      linhas.push('📋 Meu diagnóstico:');
+      linhas.push(diag.join('\n'));
+    }
+    linhas.push('');
+    linhas.push('🚀');
+    return 'https://wa.me/'+num+'?text='+encodeURIComponent(linhas.join('\n'));
   }
 
   function showSuccess(){
