@@ -31,7 +31,7 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .brand{position:fixed;top:16px;left:0;right:0;text-align:center;z-index:40;pointer-events:none}
 .logo{height:42px;width:auto;display:inline-block}
 
-.stage{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:80px 22px 32px;position:relative}
+.stage{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:64px 22px 24px;position:relative}
 .stage::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 50% at 50% 30%,rgba(253,216,53,.07),transparent 70%);pointer-events:none}
 .wrap{width:100%;max-width:600px;position:relative}
 
@@ -39,17 +39,17 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .screen.active{display:block}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-.w-hero{width:100%;height:clamp(170px,29vh,260px);object-fit:cover;object-position:center 22%;border-radius:16px;display:block;margin-bottom:16px;border:1px solid var(--line)}
-.greet{font-size:15px;font-weight:700;color:var(--yellow);margin-bottom:8px;letter-spacing:.01em}
+.w-hero{width:100%;height:clamp(200px,30vh,280px);object-fit:cover;object-position:center 22%;border-radius:16px;display:block;margin-bottom:12px;border:1px solid var(--line)}
+.greet{font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:6px;letter-spacing:.01em}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:20px}
 .eyebrow::before{content:'';width:24px;height:2px;background:var(--yellow);border-radius:2px}
-.w-title{font-size:clamp(27px,5vw,40px);font-weight:800;line-height:1.22;letter-spacing:-.02em;margin-bottom:18px}
+.w-title{font-size:clamp(23px,4.4vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:12px}
 .w-title em{color:var(--yellow);font-style:normal}
-.w-sub{font-size:clamp(15px,1.9vw,17px);color:var(--txt-dim);line-height:1.75;margin-bottom:16px}
+.w-sub{font-size:clamp(14px,1.8vw,16px);color:var(--txt-dim);line-height:1.65;margin-bottom:14px}
 .w-sub b{color:#fff;font-weight:700}
 .w-note{font-size:14px;color:var(--txt-faint);line-height:1.65;margin-bottom:0}
 
-.proof{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--txt-dim);font-weight:700;flex-wrap:wrap}
+.proof{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:12.5px;color:var(--txt-dim);font-weight:700;flex-wrap:wrap}
 .proof .stars{color:var(--yellow);letter-spacing:1px}
 .proof b{color:#fff}
 
@@ -92,7 +92,7 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .opt-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.28);flex-shrink:0;transition:all .16s;margin-left:auto}
 .opt.sel .opt-dot{border-color:var(--yellow);background:var(--yellow);box-shadow:inset 0 0 0 5px var(--bg)}
 
-.btn{width:100%;padding:17px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;border:none;font-family:inherit;margin-top:18px;transition:filter .18s,transform .18s;background:linear-gradient(135deg,var(--yellow-d),var(--yellow));color:#0a0805}
+.btn{width:100%;padding:15px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;border:none;font-family:inherit;margin-top:10px;transition:filter .18s,transform .18s;background:linear-gradient(135deg,var(--yellow-d),var(--yellow));color:#0a0805}
 .btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
 .back{background:none;border:none;font-size:13px;color:var(--txt-faint);cursor:pointer;padding:16px 0 0;font-family:inherit;display:block;width:100%;text-align:center}
 .back:hover{color:#fff}
@@ -142,9 +142,13 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI'
 }
 
 @media(max-width:560px){
-  .brand{top:14px} .logo{height:34px} .stage{padding:72px 18px 26px}
-  .w-hero{height:clamp(150px,24vh,210px);margin-bottom:14px}
-  .w-title{margin-bottom:12px} .w-sub{margin-bottom:10px}
+  .brand{top:10px} .logo{height:30px} .stage{padding:56px 16px 18px}
+  .w-hero{height:clamp(170px,24vh,210px);margin-bottom:10px}
+  .w-title{font-size:clamp(20px,5.2vw,26px);margin-bottom:8px}
+  .w-sub{font-size:14px;line-height:1.55;margin-bottom:10px}
+  .greet{font-size:13px;margin-bottom:4px}
+  .btn{margin-top:8px;padding:14px}
+  .proof{margin-top:10px;padding-top:8px;font-size:12px}
 }
 </style>
 </head>
@@ -186,10 +190,10 @@ const CONFIG = {
   valorTop: 100,
   currency: "BRL",
 
-  // QUALIFICAÇÃO: único corte é investimento < R$1.200 (kill). Investiu >=1.200 = qualificado,
-  // mesmo faturando <20k. Faturamento/advogados só pesam pra definir o lead TOP.
-  qualifyThreshold: 1,    // qualquer um sem kill investe >=1.200 (score sempre >=1)
-  topThreshold:    7,     // lead TOP = qualificado com score alto (estrutura + grana)
+  // QUALIFICAÇÃO: SEM kill switch — todo lead que preenche é enviado ao comercial.
+  // Faturamento/advogados/investimento pesam apenas pra classificar TOP vs padrão.
+  qualifyThreshold: 0,    // todo lead que chega ao final é qualificado (comercial filtra)
+  topThreshold:    7,     // lead TOP = alto score de estrutura + grana
 
   // WHATSAPP — lead qualificado cai direto na conversa com mensagem pronta.
   // >>> TROCAR pelo número real do 1Nort Advoga (formato internacional, só dígitos) <<<
@@ -221,10 +225,10 @@ const CONFIG = {
     eyebrow:"Método 1Nort",
     image:"hero-welcome.jpg",
     imageWebp:"hero-welcome.webp",
-    title:"Conheça o Método capaz de trazer <em>Contatos com Viabilidade</em> todos os dias pro seu WhatsApp",
-    sub:"Receba <b>Leads Qualificados e Pré-Agendados</b> pela nossa IA de Atendimento.",
-    note:"Preencha o formulário de 30 segundos e tenha acesso ao método que já ajudou centenas de escritórios por todo o Brasil.",
-    proof:"<b>+200 escritórios trabalhistas</b> de todo o Brasil",
+    title:"Advogado Trabalhista, conheça o Método capaz de trazer <em>Contatos com Viabilidade TODOS OS DIAS</em> para o seu WhatsApp!",
+    sub:"Método da 1Nort que já ajudou <b>+200 escritórios trabalhistas</b> a receberem leads qualificados no WhatsApp com <b>Geração de Demanda, IA de Atendimento e Processo Comercial Alinhado</b>.",
+    note:"",
+    proof:"<b>+200 escritórios trabalhistas</b> já escalaram com a 1Nort",
     cta:"Começar →"
   },
 
@@ -255,28 +259,39 @@ const CONFIG = {
       fields:[
         { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",       autocomplete:"name" },
         { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999",      autocomplete:"tel", prefix:"+55"  }
-      ], trust:true, next:"advogados" },
+      ], trust:true, next:"desafio" },
 
-    { id:"advogados", type:"single", title:"Quantos advogados atuam no escritório, {nome}? (incluindo sócios)",
+    /* NOVA — engajamento antes das perguntas de qualificação (afinidade + insumo pro comercial) */
+    { id:"desafio", type:"single", title:"Qual o maior desafio do escritório hoje, {nome}?",
       options:[
-        {ic:"🧑‍⚖️",t:"Sou só eu / autônomo",     s:0, next:"faturamento"},
-        {ic:"👥",t:"2 advogados",              s:0, next:"faturamento"},
-        {ic:"⚖️",t:"3 a 5 advogados",           s:2, next:"faturamento"},
-        {ic:"🏛️",t:"6 ou mais advogados",       s:3, next:"faturamento"}
+        {ic:"📭",t:"Faltam clientes novos",              s:0, next:"advogados"},
+        {ic:"🎯",t:"Tenho leads, mas não convertem",     s:0, next:"advogados"},
+        {ic:"⏰",t:"Não tenho tempo pra atender",         s:0, next:"advogados"},
+        {ic:"📈",t:"Já tenho clientes, quero escalar",    s:0, next:"advogados"}
       ] },
-    { id:"faturamento", type:"single", title:"Faturamento mensal médio do escritório?",
+    { id:"advogados", type:"single", title:"Quantos advogados atuam no escritório? (incluindo sócios)",
       options:[
-        {ic:"🔹",t:"Até R$ 20 mil",          s:0, next:"investimento"},
-        {ic:"🔸",t:"R$ 20 mil a R$ 50 mil",  s:1, next:"investimento"},
-        {ic:"💎",t:"Acima de R$ 50 mil",     s:3, next:"investimento"}
+        {ic:"🧑‍⚖️",t:"Sou só eu / autônomo",     s:0, next:"contratos"},
+        {ic:"👥",t:"2 advogados",              s:0, next:"contratos"},
+        {ic:"⚖️",t:"3 a 5 advogados",           s:2, next:"contratos"},
+        {ic:"🏛️",t:"6 ou mais advogados",       s:3, next:"contratos"}
       ] },
-    /* PERGUNTA-CHAVE E FINAL — investimento < R$ 1.200 = desqualificado (kill) */
-    { id:"investimento", type:"single", submit:true, title:"Qual valor mensal você está disposto a investir em tráfego pago pra aumentar a previsibilidade do escritório?<br><span style='font-size:.62em;font-weight:600;color:var(--txt-dim)'>(fora a assessoria da 1Nort)</span>",
+    /* Substitui a pergunta de faturamento — volume de fechamento é menos invasivo e mais preciso pra vender tráfego */
+    { id:"contratos", type:"single", title:"Quantos contratos novos o escritório fecha por mês, em média?",
       options:[
-        {ic:"🚫",t:"Menos de R$ 1.200",     kill:true, s:0},
-        {ic:"🔹",t:"R$ 1.200 a R$ 3.000",   s:1},
-        {ic:"🔸",t:"R$ 3.000 a R$ 6.000",   s:2},
-        {ic:"🚀",t:"Acima de R$ 6.000",     s:3}
+        {ic:"🔧",t:"1 ou menos",     s:0, next:"investimento"},
+        {ic:"⚡",t:"2 a 5",           s:1, next:"investimento"},
+        {ic:"📈",t:"6 a 15",          s:2, next:"investimento"},
+        {ic:"🚀",t:"Mais de 15",      s:3, next:"investimento"}
+      ] },
+    /* PERGUNTA FINAL — título curto + sub com os números (evita título gigante). Sem kill. */
+    { id:"investimento", type:"single", submit:true,
+      title:"Esse é um ponto de partida que combina com seu escritório?",
+      sub:"Nossos clientes fecham <b>5 a 15 novos contratos por mês</b> investindo cerca de <b>R$ 40/dia</b> em anúncios (~R$ 1.200/mês). Volume médio: <b>~100 contatos qualificados no WhatsApp</b>.",
+      options:[
+        {ic:"🌱",t:"Quero começar com menos",             s:1},
+        {ic:"✅",t:"É um ponto de partida ideal",         s:2},
+        {ic:"🚀",t:"Quero começar investindo mais!",      s:3}
       ] }
   ]
 };
@@ -371,7 +386,7 @@ const CONFIG = {
       ${w.image?`<picture>${w.imageWebp?`<source srcset="${w.imageWebp}" type="image/webp">`:''}<img class="w-hero" src="${w.image}" alt="Equipe da 1Nort" width="700" height="466" loading="eager" decoding="async" fetchpriority="high"></picture>`:''}
       <div class="greet">${saudacao()}, advogado 👋</div>
       <h1 class="w-title">${w.title}</h1>
-      <p class="w-sub">${w.sub}</p><p class="w-note">${w.note}</p>
+      <p class="w-sub">${w.sub}</p>${w.note?`<p class="w-note">${w.note}</p>`:''}
       <button class="btn" id="startBtn">${w.cta}</button>
       ${w.proof?`<div class="proof"><span class="stars">★★★★★</span><span>${w.proof}</span></div>`:''}</div>`;
     setProg(0);
