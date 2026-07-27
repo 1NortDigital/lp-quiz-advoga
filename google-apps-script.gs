@@ -32,16 +32,20 @@ var SCHEMAS = {
     colunas: [
       'data_hora','tier','qualificado','top_tier','score',
       'nome','telefone','email','cidade',
-      'advogados','desafio','contratos','investimento',
+      'advogados','faturamento','investimento','instagram',
       'pagina','utm_source','utm_medium','utm_campaign','utm_content',
-      'fbc','fbp','origem','event_id','parcial','respostas_json'
+      'fbc','fbp','origem','event_id','parcial',
+      'desafio','contratos',
+      'respostas_json'
     ],
     titulos: [
       'Data/Hora','Tier','Qualificado','Top Tier','Score',
       'Nome','Telefone','Email','Cidade',
-      'Advogados','Desafio','Contratos','Investimento',
+      'Advogados','Faturamento','Investimento','Instagram',
       'Pagina','UTM Source','UTM Medium','UTM Campaign','UTM Content',
-      'FBC','FBP','Origem','Event ID','Parcial','Respostas (JSON)'
+      'FBC','FBP','Origem','Event ID','Parcial',
+      'Desafio','Contratos',
+      'Respostas (JSON)'
     ]
   }
 };
