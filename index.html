@@ -227,7 +227,7 @@ const CONFIG = {
     eyebrow:"Método 1Nort",
     image:"hero-welcome.jpg",
     imageWebp:"hero-welcome.webp",
-    title:"Advogado Trabalhista, conheça o Método capaz de trazer <em>Contatos com Viabilidade TODOS OS DIAS</em> para o seu WhatsApp!",
+    title:"Conheça o Método capaz de trazer <em>Contatos com Viabilidade TODOS OS DIAS</em> para o seu WhatsApp!",
     sub:"Método da 1Nort que já ajudou <b>+200 escritórios trabalhistas</b> a receberem leads qualificados no WhatsApp com <b>Geração de Demanda, IA de Atendimento e Processo Comercial Alinhado</b>.",
     note:"",
     proof:"<b>+200 escritórios trabalhistas</b> já escalaram com a 1Nort",
@@ -386,7 +386,7 @@ const CONFIG = {
     currentId=null; const w=CONFIG.welcome;
     host.innerHTML = `<div class="screen active">
       ${w.image?`<picture>${w.imageWebp?`<source srcset="${w.imageWebp}" type="image/webp">`:''}<img class="w-hero" src="${w.image}" alt="Equipe da 1Nort" width="700" height="466" loading="eager" decoding="async" fetchpriority="high"></picture>`:''}
-      <div class="greet">${saudacao()}, advogado 👋</div>
+      <div class="greet">${saudacao()}, advogado trabalhista.</div>
       <h1 class="w-title">${w.title}</h1>
       <p class="w-sub">${w.sub}</p>${w.note?`<p class="w-note">${w.note}</p>`:''}
       <button class="btn" id="startBtn">${w.cta}</button>
