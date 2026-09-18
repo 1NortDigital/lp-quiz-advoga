@@ -197,7 +197,8 @@ const CONFIG = {
   sheetsUrl:  "https://script.google.com/macros/s/AKfycbzYM6CdDzk5CFiOrmSJMBw_ds_boUJE_SI2F6n2B2bmiAI72hPspsGsrLjN3PTupMZXpw/exec",   // MESMA URL da solar (roteia por 'pagina' p/ aba Advoga)
   pagina:     "lp-quiz-advoga-trabalhista",
 
-  // EVENTOS — só disparam pro lead qualificado (score >= qualifyThreshold e sem kill switch)
+  // EVENTOS DE FUNIL — permitem medir a passagem por etapa no Meta Events Manager.
+  // EndForm = contato capturado; RespondiConversion = escritório qualificado no fim do quiz.
   eventoConversao: "RespondiConversion",   // escritório qualificado
   eventoContato:   "EndForm",
   pedirEmail:      false,
@@ -207,8 +208,8 @@ const CONFIG = {
   valorTop: 100,
   currency: "BRL",
 
-  // QUALIFICAÇÃO: kill switch só em área "Outra" e no reframe 🔴 (caem numa tela terminal, sem contato, sem rede).
-  // Faturamento/investimento/reframe pontuam (score do caminho). O contato é a ÚLTIMA tela — quem chega nela é qualificado.
+  // QUALIFICAÇÃO: área "Outra", faturamento até R$ 20 mil e reframe 🔴 são desqualificados.
+  // O contato fica depois de área/desafio: é salvo como parcial, mas só vira conversão qualificada no fim.
   // TOP não usa limiar numérico: fatura R$ 50 mil+ (pts.faturamento >= 2) E respondeu "ponto de partida ideal" ou
   // "investir mais" (pts.investimento >= 2) sem passar pelo reframe — regra fica em computeScore().
   qualifyThreshold: 0,    // todo lead que chega ao contato é qualificado (comercial filtra)
@@ -271,46 +272,55 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → area_atuacao → faturamento → desafio → investimento → (orcamento_reframe só se "começar com menos") → contato → fim.
-     Kill switch (área "Outra" / reframe 🔴) leva pra tela terminal type:"end": sem contato, sem pixel, sem webhook, sem planilha. */
+  /* FLUXO: Welcome → área → desafio → contato → faturamento → investimento → [reframe] → fim.
+     Área "Outra" sai antes do contato. Faturamento até R$ 20 mil e orçamento total abaixo de
+     R$ 2 mil preservam o contato parcial para nutrição, mas não disparam RespondiConversion. */
   steps: [
     /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
     { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
       options:[
-        {ic:"⚖️", t:"Trabalhista",    s:0, next:"faturamento"},
-        {ic:"🧓", t:"Previdenciário", s:0, next:"faturamento"},
-        {ic:"🏦", t:"Bancário",       s:0, next:"faturamento"},
-        {ic:"🧾", t:"Tributário",     s:0, next:"faturamento"},
+        {ic:"⚖️", t:"Trabalhista",    s:0, next:"desafio"},
+        {ic:"🧓", t:"Previdenciário", s:0, next:"desafio"},
+        {ic:"🏦", t:"Bancário",       s:0, next:"desafio"},
+        {ic:"🧾", t:"Tributário",     s:0, next:"desafio"},
         {ic:"📂", t:"Outra",          s:0, next:"nurture_area", kill:true}
       ] },
 
-    /* 2 — Faturamento. SÓ PONTUA, ninguém é desqualificado aqui */
+    /* 2 — Desafio: pergunta leve antes da captura de contato */
+    { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
+      options:[
+        {ic:"📭",t:"Faltam clientes novos",           s:0, next:"contato"},
+        {ic:"🎯",t:"Tenho leads, mas não convertem",  s:0, next:"contato"},
+        {ic:"⏰",t:"Não tenho tempo pra atender",      s:0, next:"contato"},
+        {ic:"📈",t:"Já tenho clientes, quero escalar", s:0, next:"contato"}
+      ] },
+
+    /* 3 — Contato: salva parcial para não perder quem abandonar na qualificação */
+    { id:"contato", type:"contact", fireContato:true, savePartial:true, contactPicker:true,
+      title:"Vamos continuar 👋", sub:"Pra onde enviamos seu diagnóstico?",
+      fields:[
+        { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",  autocomplete:"name" },
+        { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999", autocomplete:"tel", prefix:"+55" }
+      ], trust:true, next:"faturamento" },
+
+    /* 4 — Faturamento. Até R$ 20 mil vai para nutrição e não vira lead qualificado */
     { id:"faturamento", type:"single", title:"Qual foi o faturamento médio mensal do escritório nos últimos 3 meses?",
       sub:"Uma média aproximada já serve, é só pra calibrar o diagnóstico.",
       options:[
-        {ic:"🌱", t:"Até R$ 20 mil",             s:0, next:"desafio"},
-        {ic:"📊", t:"De R$ 20 mil a R$ 50 mil",  s:1, next:"desafio"},
-        {ic:"📈", t:"De R$ 50 mil a R$ 100 mil", s:2, next:"desafio"},
-        {ic:"🏛️", t:"Acima de R$ 100 mil",      s:3, next:"desafio"}
+        {ic:"🌱", t:"Até R$ 20 mil",             s:0, next:"nurture_faturamento", kill:true},
+        {ic:"📊", t:"De R$ 20 mil a R$ 50 mil",  s:1, next:"investimento"},
+        {ic:"📈", t:"De R$ 50 mil a R$ 100 mil", s:2, next:"investimento"},
+        {ic:"🏛️", t:"Acima de R$ 100 mil",      s:3, next:"investimento"}
       ] },
 
-    /* 3 — Desafio: engajamento + insumo pro comercial. Não pontua, não desqualifica */
-    { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
-      options:[
-        {ic:"📭",t:"Faltam clientes novos",           s:0, next:"investimento"},
-        {ic:"🎯",t:"Tenho leads, mas não convertem",  s:0, next:"investimento"},
-        {ic:"⏰",t:"Não tenho tempo pra atender",      s:0, next:"investimento"},
-        {ic:"📈",t:"Já tenho clientes, quero escalar", s:0, next:"investimento"}
-      ] },
-
-    /* 4 — Investimento: bifurca — quem quer menos vai pro reframe, o resto segue pro contato */
+    /* 5 — Investimento: bifurca — quem quer menos vai pro reframe, o resto conclui */
     { id:"investimento", type:"single", image:"imagens/time.jpg",
       title:"Nossos clientes fecham <b>5 a 15 novos contratos por mês</b> investindo cerca de <b>R$ 40/dia</b> em anúncios (~R$ 1.200/mês).",
       sub:"Esse é um ponto de partida que combina com seu escritório?",
       options:[
         {ic:"🌱",t:"Quero começar com menos",        s:1, next:"orcamento_reframe"},
-        {ic:"✅",t:"É um ponto de partida ideal",    s:2, next:"contato"},
-        {ic:"🚀",t:"Quero começar investindo mais!", s:3, next:"contato"}
+        {ic:"✅",t:"É um ponto de partida ideal",    s:2, submit:true},
+        {ic:"🚀",t:"Quero começar investindo mais!", s:3, submit:true}
       ] },
 
     /* 5 — Reframe: prova visual (card WhatsApp) + pergunta de corte pelo valor TOTAL (mídia + equipe). 🔴 = kill switch */
@@ -326,24 +336,19 @@ const CONFIG = {
       price:"Pra receber lead assim todo dia, o investimento total (mídia + equipe da 1Nort) fica em média entre <b>R$ 2.500 e R$ 3.000/mês</b>. Menos que isso a matemática não fecha.",
       sub:"Com essa perspectiva, quanto faz sentido investir por mês no total?",
       options:[
-        {ic:"🟢",t:"Consigo os R$ 2.500 a 3.000/mês", s:2, next:"contato"},
-        {ic:"🟡",t:"Entre R$ 2.000 e R$ 2.500",       s:1, next:"contato"},
+        {ic:"🟢",t:"Consigo os R$ 2.500 a 3.000/mês", s:2, submit:true},
+        {ic:"🟡",t:"Entre R$ 2.000 e R$ 2.500",       s:1, submit:true},
         {ic:"🔴",t:"Menos que R$ 2.000 hoje",         s:0, next:"nurture", kill:true}
       ] },
 
-    /* 6 — Contato: ÚLTIMA tela, submete. Sem savePartial (o envio completo vem logo em seguida) */
-    { id:"contato", type:"contact", submit:true, fireContato:true, contactPicker:true,
-      title:"Último passo 👋", sub:"Pra onde enviamos seu diagnóstico?",
-      fields:[
-        { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",  autocomplete:"name" },
-        { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999", autocomplete:"tel", prefix:"+55" }
-      ], trust:true },
-
-    /* Telas terminais de desqualificação — sem opções, sem rede, sem eventos, sem {nome} */
+    /* Telas terminais de desqualificação */
     { id:"nurture_area", type:"end", terminal:true,
       title:"Obrigado pelo interesse 🙏",
       sub:"Hoje a 1Nort atende escritórios das áreas trabalhista, previdenciária, bancária e tributária, e a gente prefere ser transparente a prometer resultado numa área que ainda não dominamos.<br><br>Se o escritório também atuar em uma dessas áreas, volta aqui e refaz o diagnóstico." },
-    { id:"nurture", type:"end", terminal:true,
+    { id:"nurture_faturamento", type:"end", terminal:true, saveDisqualified:true,
+      title:"Obrigado pela transparência, {nome} 🙏",
+      sub:"Neste momento, a estrutura da 1Nort é indicada para escritórios que já faturam acima de R$ 20 mil por mês. Guardamos seu diagnóstico para poder retomar quando o escritório estiver no momento certo." },
+    { id:"nurture", type:"end", terminal:true, saveDisqualified:true,
       title:"Valeu pela honestidade 🙌",
       sub:"Com menos de R$ 2.000/mês no total, a parceria com a 1Nort ainda não vai performar — o algoritmo não tem volume pra aprender e a gente prefere te falar isso antes de vender.<br><br>Quando o momento chegar, volta aqui e refaz o diagnóstico." }
   ]
@@ -356,10 +361,18 @@ const CONFIG = {
   const host = document.getElementById("stepHost");
   const fill = document.getElementById("progFill");
   const stepById = {}; CONFIG.steps.forEach(s=>stepById[s.id]=s);
+  const STEP_COMPLETE_EVENTS = {
+    area_atuacao: "AreaComplete",
+    desafio: "DesafioComplete",
+    faturamento: "FaturamentoComplete",
+    investimento: "InvestimentoComplete"
+  };
+  const FUNNEL_EVENT_NAMES = new Set(["QuizStart", "ContactView", ...Object.values(STEP_COMPLETE_EVENTS)]);
   const lead = { qualified:null, score:0, top:false, killed:false, respostas:{}, pts:{}, kills:{}, papel:"", firedEvents:[] };
   const stepHistory = [];   // histórico de telas (NÃO confundir com window.history)
   let currentId = null;
   let partialSent = false;
+  let disqualifiedSent = false;
   let retentionArmed = false;
 
   if(window.fbq && CONFIG.pixelId.indexOf("COLOQUE")<0){ fbq('init',CONFIG.pixelId); fbq('track','PageView'); }
@@ -470,12 +483,18 @@ const CONFIG = {
       <button class="btn" id="startBtn">${w.cta}</button>
       ${w.proof?`<div class="proof"><span class="stars">★★★★★</span><span>${w.proof}</span></div>`:''}</div>`;
     setProg(0);
-    document.getElementById('startBtn').onclick = ()=>{ stepHistory.length=0; armRetention(); render(CONFIG.steps[0].id); };
+    document.getElementById('startBtn').onclick = ()=>{
+      stepHistory.length=0;
+      fireEvent("QuizStart", {step_id:"welcome"});
+      armRetention();
+      render(CONFIG.steps[0].id);
+    };
   }
 
   function render(id){
     const step = stepById[id]; currentId=id;
     if(step.type==='contact'){
+      fireEvent("ContactView", {step_id:step.id});
       host.innerHTML = `<div class="screen active">
         <div class="q-step">Etapa ${stepHistory.length+1}</div>
         <div class="q-title">${px(step.title)}</div>${step.sub?`<div class="q-sub">${px(step.sub)}</div>`:''}
@@ -526,6 +545,11 @@ const CONFIG = {
           lead.pts[step.id]=opt.s||0;
           lead.kills[step.id]=opt.kill===true;   // kill switch (área "Outra" / reframe 🔴) → opt.next é uma tela terminal type:"end"
           const isSubmit = step.submit || opt.submit===true;
+          const stepEvent = STEP_COMPLETE_EVENTS[step.id];
+          if(stepEvent) fireEvent(stepEvent, {
+            step_id:step.id,
+            route:opt.kill===true?'disqualified':isSubmit?'submit':'continue'
+          });
           setTimeout(()=>{
             if(isSubmit){ maybeShowSocialProof(); }                     // passo final → prova social (qualificado) ou finish
             else { stepHistory.push(currentId); render(opt.next); }
@@ -536,8 +560,12 @@ const CONFIG = {
     }
     else if(step.type==='end'){
       // Tela TERMINAL de desqualificação (destino de kill:true): só título + sub.
-      // Sem opções, sem "Voltar", sem pixel, sem webhook, sem planilha — e NUNCA chama finish().
-      computeScore();        // só atualiza lead.killed/qualified em memória (sem efeito de rede)
+      // Quando o contato já foi capturado, atualiza o webhook como desqualificado para nutrição.
+      computeScore();
+      if(step.saveDisqualified && lead.telefone && !disqualifiedSent){
+        disqualifiedSent=true;
+        sendWebhook(false);
+      }
       disarmRetention();
       host.innerHTML = `<div class="screen active">
         <div class="success-ic">👋</div>
@@ -629,10 +657,11 @@ const CONFIG = {
     fbq('init', CONFIG.pixelId, am);
   }
   function fireEvent(name, custom){
+    if(!name || lead.firedEvents.some(e=>e.event_name===name)) return;
     // mesmo event_id (base) pro navegador e pra CAPI → Meta deduplica por (event_name + event_id)
     lead.firedEvents.push({ event_name:name, event_id:eventId, custom_data:custom||{} });
     if(!window.fbq || CONFIG.pixelId.indexOf("COLOQUE")>=0){ console.log('[pixel mock]',name,custom||{},'| qualified:',lead.qualified,'| score:',lead.score,'| top:',lead.top); return; }
-    fbq('track', name, custom||{}, { eventID:eventId });
+    fbq(FUNNEL_EVENT_NAMES.has(name)?'trackCustom':'track', name, custom||{}, { eventID:eventId });
   }
   // Envio que SOBREVIVE ao redirect (sendBeacon é entregue mesmo com a página saindo).
   // Corrige o bug de lead perdido no Sheets quando redireciona pro WhatsApp (mobile/iOS).
