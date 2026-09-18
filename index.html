@@ -208,10 +208,9 @@ const CONFIG = {
   valorTop: 100,
   currency: "BRL",
 
-  // QUALIFICAÇÃO: área "Outra", faturamento até R$ 20 mil e reframe 🔴 são desqualificados.
+  // QUALIFICAÇÃO: área "Outra" e reframe 🔴 são desqualificados.
   // O contato fica depois de área/desafio: é salvo como parcial, mas só vira conversão qualificada no fim.
-  // TOP não usa limiar numérico: fatura R$ 50 mil+ (pts.faturamento >= 2) E respondeu "ponto de partida ideal" ou
-  // "investir mais" (pts.investimento >= 2) sem passar pelo reframe — regra fica em computeScore().
+  // TOP = aceitou o ponto de partida ou quer investir mais, sem passar pelo reframe.
   qualifyThreshold: 0,    // todo lead que chega ao contato é qualificado (comercial filtra)
 
   // WHATSAPP — lead qualificado cai direto na conversa com mensagem pronta.
@@ -272,9 +271,9 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → área → desafio → contato → faturamento → investimento → [reframe] → fim.
-     Área "Outra" sai antes do contato. Faturamento até R$ 20 mil e orçamento total abaixo de
-     R$ 2 mil preservam o contato parcial para nutrição, mas não disparam RespondiConversion. */
+  /* FLUXO: Welcome → área → desafio → contato → investimento → [reframe] → fim.
+     Área "Outra" sai antes do contato. Orçamento total abaixo de R$ 2 mil preserva o contato
+     parcial para nutrição, mas não dispara RespondiConversion. */
   steps: [
     /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
     { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
@@ -289,10 +288,10 @@ const CONFIG = {
     /* 2 — Desafio: pergunta leve antes da captura de contato */
     { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
       options:[
-        {ic:"📭",t:"Faltam clientes novos",           s:0, next:"contato"},
-        {ic:"🎯",t:"Tenho leads, mas não convertem",  s:0, next:"contato"},
-        {ic:"⏰",t:"Não tenho tempo pra atender",      s:0, next:"contato"},
-        {ic:"📈",t:"Já tenho clientes, quero escalar", s:0, next:"contato"}
+        {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"contato"},
+        {ic:"🎯",t:"Recebo Leads, mas poucos viram contratos",               s:0, next:"contato"},
+        {ic:"⏳",t:"Falta estrutura para atender e fazer follow-up",          s:0, next:"contato"},
+        {ic:"📈",t:"Já tenho um processo e quero escalar com previsibilidade", s:0, next:"contato"}
       ] },
 
     /* 3 — Contato: salva parcial para não perder quem abandonar na qualificação */
@@ -301,19 +300,9 @@ const CONFIG = {
       fields:[
         { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",  autocomplete:"name" },
         { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999", autocomplete:"tel", prefix:"+55" }
-      ], trust:true, next:"faturamento" },
+      ], trust:true, next:"investimento" },
 
-    /* 4 — Faturamento. Até R$ 20 mil vai para nutrição e não vira lead qualificado */
-    { id:"faturamento", type:"single", title:"Qual foi o faturamento médio mensal do escritório nos últimos 3 meses?",
-      sub:"Uma média aproximada já serve, é só pra calibrar o diagnóstico.",
-      options:[
-        {ic:"🌱", t:"Até R$ 20 mil",             s:0, next:"nurture_faturamento", kill:true},
-        {ic:"📊", t:"De R$ 20 mil a R$ 50 mil",  s:1, next:"investimento"},
-        {ic:"📈", t:"De R$ 50 mil a R$ 100 mil", s:2, next:"investimento"},
-        {ic:"🏛️", t:"Acima de R$ 100 mil",      s:3, next:"investimento"}
-      ] },
-
-    /* 5 — Investimento: bifurca — quem quer menos vai pro reframe, o resto conclui */
+    /* 4 — Investimento: bifurca — quem quer menos vai pro reframe, o resto conclui */
     { id:"investimento", type:"single", image:"imagens/time.jpg",
       title:"Nossos clientes fecham <b>5 a 15 novos contratos por mês</b> investindo cerca de <b>R$ 40/dia</b> em anúncios (~R$ 1.200/mês).",
       sub:"Esse é um ponto de partida que combina com seu escritório?",
@@ -345,9 +334,6 @@ const CONFIG = {
     { id:"nurture_area", type:"end", terminal:true,
       title:"Obrigado pelo interesse 🙏",
       sub:"Hoje a 1Nort atende escritórios das áreas trabalhista, previdenciária, bancária e tributária, e a gente prefere ser transparente a prometer resultado numa área que ainda não dominamos.<br><br>Se o escritório também atuar em uma dessas áreas, volta aqui e refaz o diagnóstico." },
-    { id:"nurture_faturamento", type:"end", terminal:true, saveDisqualified:true,
-      title:"Obrigado pela transparência, {nome} 🙏",
-      sub:"Neste momento, a estrutura da 1Nort é indicada para escritórios que já faturam acima de R$ 20 mil por mês. Guardamos seu diagnóstico para poder retomar quando o escritório estiver no momento certo." },
     { id:"nurture", type:"end", terminal:true, saveDisqualified:true,
       title:"Valeu pela honestidade 🙌",
       sub:"Com menos de R$ 2.000/mês no total, a parceria com a 1Nort ainda não vai performar — o algoritmo não tem volume pra aprender e a gente prefere te falar isso antes de vender.<br><br>Quando o momento chegar, volta aqui e refaz o diagnóstico." }
@@ -364,7 +350,6 @@ const CONFIG = {
   const STEP_COMPLETE_EVENTS = {
     area_atuacao: "AreaComplete",
     desafio: "DesafioComplete",
-    faturamento: "FaturamentoComplete",
     investimento: "InvestimentoComplete"
   };
   const FUNNEL_EVENT_NAMES = new Set(["QuizStart", "ContactView", ...Object.values(STEP_COMPLETE_EVENTS)]);
@@ -638,13 +623,13 @@ const CONFIG = {
   function computeScore(){
     const path = stepHistory.concat(currentId);
     let s=0, killed=false;
-    path.forEach(id=>{ s += (lead.pts[id]||0); if(lead.kills[id]) killed=true; });   // faturamento 0-3 + investimento 1-3 + reframe 0-2
+    path.forEach(id=>{ s += (lead.pts[id]||0); if(lead.kills[id]) killed=true; });   // investimento 1-3 + reframe 0-2
     lead.score    = s;
     lead.killed   = killed;
     lead.qualified= !killed && s >= CONFIG.qualifyThreshold;   // kill switch derruba mesmo com score alto
-    // TOP = fatura R$ 50 mil+ E "ponto de partida ideal"/"investir mais" no investimento. Quem passa pelo reframe nunca é TOP.
+    // TOP = "ponto de partida ideal"/"investir mais" no investimento. Quem passa pelo reframe nunca é TOP.
     const viaReframe = path.indexOf('orcamento_reframe') > -1;
-    lead.top      = lead.qualified && (lead.pts.faturamento||0) >= 2 && (lead.pts.investimento||0) >= 2 && !viaReframe;
+    lead.top      = lead.qualified && (lead.pts.investimento||0) >= 2 && !viaReframe;
     return s;
   }
 

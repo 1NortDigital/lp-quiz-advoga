@@ -34,8 +34,8 @@ var SCHEMAS = {
   },
   advoga: {
     aba: 'Advoga',
-    // 2026-09-18 — quiz: area_atuacao > desafio > contato > faturamento > investimento > [reframe].
-    // 'advogados' e 'contratos' SAIRAM do quiz mas FICAM aqui (chegam vazias daqui pra frente) pra nao
+    // 2026-09-18 — quiz: area_atuacao > desafio > contato > investimento > [reframe].
+    // 'advogados', 'contratos' e 'faturamento' SAIRAM do quiz mas FICAM aqui (chegam vazias) pra nao
     // desalinhar as linhas antigas da aba. Coluna nova entra SEMPRE no FIM (depois de 'ref'):
     // 'area_atuacao' vem no topo do payload (e tambem em respostas{}), valueFor_ resolve nos dois.
     colunas: [
