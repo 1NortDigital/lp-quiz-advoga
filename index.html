@@ -209,7 +209,7 @@ const CONFIG = {
   currency: "BRL",
 
   // QUALIFICAÇÃO: área "Outra" e reframe 🔴 são desqualificados.
-  // O contato fica depois de área/desafio: é salvo como parcial, mas só vira conversão qualificada no fim.
+  // Todas as perguntas vêm antes do contato. Só quem conclui o quiz e preenche nome/WhatsApp é enviado.
   // TOP = aceitou o ponto de partida ou quer investir mais, sem passar pelo reframe.
   qualifyThreshold: 0,    // todo lead que chega ao contato é qualificado (comercial filtra)
 
@@ -271,9 +271,8 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → área → desafio → contato → investimento → [reframe] → fim.
-     Área "Outra" sai antes do contato. Orçamento total abaixo de R$ 2 mil preserva o contato
-     parcial para nutrição, mas não dispara RespondiConversion. */
+  /* FLUXO: Welcome → área → desafio → investimento → [reframe] → contato → fim.
+     Área "Outra", orçamento total abaixo de R$ 2 mil e abandonos saem sem gerar lead. */
   steps: [
     /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
     { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
@@ -285,34 +284,26 @@ const CONFIG = {
         {ic:"📂", t:"Outra",          s:0, next:"nurture_area", kill:true}
       ] },
 
-    /* 2 — Desafio: pergunta leve antes da captura de contato */
+    /* 2 — Desafio */
     { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
       options:[
-        {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"contato"},
-        {ic:"🎯",t:"Recebo Leads, mas poucos viram contratos",               s:0, next:"contato"},
-        {ic:"⏳",t:"Falta estrutura para atender e fazer follow-up",          s:0, next:"contato"},
-        {ic:"📈",t:"Já tenho um processo e quero escalar com previsibilidade", s:0, next:"contato"}
+        {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"investimento"},
+        {ic:"🎯",t:"Recebo Leads, mas poucos viram contratos",               s:0, next:"investimento"},
+        {ic:"⏳",t:"Falta estrutura para atender e fazer follow-up",          s:0, next:"investimento"},
+        {ic:"📈",t:"Já tenho um processo e quero escalar com previsibilidade", s:0, next:"investimento"}
       ] },
 
-    /* 3 — Contato: salva parcial para não perder quem abandonar na qualificação */
-    { id:"contato", type:"contact", fireContato:true, savePartial:true, contactPicker:true,
-      title:"Vamos continuar 👋", sub:"Pra onde enviamos seu diagnóstico?",
-      fields:[
-        { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",  autocomplete:"name" },
-        { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999", autocomplete:"tel", prefix:"+55" }
-      ], trust:true, next:"investimento" },
-
-    /* 4 — Investimento: bifurca — quem quer menos vai pro reframe, o resto conclui */
+    /* 3 — Investimento: bifurca — quem quer menos vai pro reframe, o resto segue pro contato */
     { id:"investimento", type:"single", image:"imagens/time.jpg",
       title:"Nossos clientes fecham <b>5 a 15 novos contratos por mês</b> investindo cerca de <b>R$ 40/dia</b> em anúncios (~R$ 1.200/mês).",
       sub:"Esse é um ponto de partida que combina com seu escritório?",
       options:[
         {ic:"🌱",t:"Quero começar com menos",        s:1, next:"orcamento_reframe"},
-        {ic:"✅",t:"É um ponto de partida ideal",    s:2, submit:true},
-        {ic:"🚀",t:"Quero começar investindo mais!", s:3, submit:true}
+        {ic:"✅",t:"É um ponto de partida ideal",    s:2, next:"contato"},
+        {ic:"🚀",t:"Quero começar investindo mais!", s:3, next:"contato"}
       ] },
 
-    /* 5 — Reframe: prova visual (card WhatsApp) + pergunta de corte pelo valor TOTAL (mídia + equipe). 🔴 = kill switch */
+    /* 4 — Reframe: prova visual (card WhatsApp) + pergunta de corte pelo valor TOTAL (mídia + equipe). 🔴 = kill switch */
     { id:"orcamento_reframe", type:"reframe",
       title:"É ISSO que a gente entrega no seu WhatsApp 👇",
       wppCard:{
@@ -325,10 +316,18 @@ const CONFIG = {
       price:"Pra receber lead assim todo dia, o investimento total (mídia + equipe da 1Nort) fica em média entre <b>R$ 2.500 e R$ 3.000/mês</b>. Menos que isso a matemática não fecha.",
       sub:"Com essa perspectiva, quanto faz sentido investir por mês no total?",
       options:[
-        {ic:"🟢",t:"Consigo os R$ 2.500 a 3.000/mês", s:2, submit:true},
-        {ic:"🟡",t:"Entre R$ 2.000 e R$ 2.500",       s:1, submit:true},
+        {ic:"🟢",t:"Consigo os R$ 2.500 a 3.000/mês", s:2, next:"contato"},
+        {ic:"🟡",t:"Entre R$ 2.000 e R$ 2.500",       s:1, next:"contato"},
         {ic:"🔴",t:"Menos que R$ 2.000 hoje",         s:0, next:"nurture", kill:true}
       ] },
+
+    /* 5 — Contato final: sem parcial. Nome e WhatsApp válidos são obrigatórios antes do envio. */
+    { id:"contato", type:"contact", fireContato:true, submit:true, contactPicker:true,
+      title:"Último passo 👋", sub:"Pra onde enviamos seu diagnóstico?",
+      fields:[
+        { key:"nome",     label:"Seu nome", type:"text", placeholder:"Dr. João Silva",  autocomplete:"name" },
+        { key:"telefone", label:"WhatsApp", type:"tel",  placeholder:"(11) 99999-9999", autocomplete:"tel", prefix:"+55" }
+      ], trust:true },
 
     /* Telas terminais de desqualificação */
     { id:"nurture_area", type:"end", terminal:true,
