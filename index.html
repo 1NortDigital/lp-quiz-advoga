@@ -450,7 +450,7 @@ const CONFIG = {
   function renderWelcome(){
     currentId=null; const w=CONFIG.welcome;
     host.innerHTML = `<div class="screen active">
-      ${w.image?`<picture>${w.imageWebp?`<source srcset="${w.imageWebp}" type="image/webp">`:''}<img class="w-hero" src="${w.image}" alt="Equipe da 1Nort" width="700" height="466" loading="eager" decoding="async" fetchpriority="high"></picture>`:''}
+      ${w.image?`<picture>${w.imageWebp?`<source srcset="${w.imageWebp}" type="image/webp">`:''}<img class="w-hero" src="${w.image}" alt="Equipe da 1Nort" width="1600" height="1067" loading="eager" decoding="async" fetchpriority="high"></picture>`:''}
       <div class="greet">${saudacao()}, advogado(a).</div>
       <h1 class="w-title">${w.title}</h1>
       <p class="w-sub">${w.sub}</p>${w.note?`<p class="w-note">${w.note}</p>`:''}
