@@ -271,13 +271,15 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → área → [atuação trabalhista] → desafio → atendimento → investimento → contato → fim.
+  /* FLUXO: Welcome → área → desafio → atendimento → investimento → contato → fim.
      Área "Outra", orçamento de anúncios abaixo de R$ 1.200 e abandonos saem sem gerar lead. */
   steps: [
     /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
     { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
       options:[
-        {ic:"⚖️", t:"Trabalhista",    s:0, next:"atuacao_trabalhista"},
+        {ic:"⚖️", t:"Trabalhista",                  s:0, next:"desafio"},
+        {ic:"👷", t:"Trabalhista — Reclamante",     areaValue:"Trabalhista", perfilTrabalhista:"Reclamante", s:0, next:"desafio"},
+        {ic:"🏢", t:"Trabalhista — Reclamada",      areaValue:"Trabalhista", perfilTrabalhista:"Reclamada",  s:0, next:"desafio"},
         {ic:"🧓", t:"Previdenciário", s:0, next:"desafio"},
         {ic:"🏦", t:"Bancário",       s:0, next:"desafio"},
         {ic:"🧾", t:"Tributário",     s:0, next:"desafio"},
@@ -285,14 +287,7 @@ const CONFIG = {
         {ic:"📂", t:"Outra",          s:0, next:"nurture_area", kill:true}
       ] },
 
-    /* 2 — Perfil trabalhista: aparece somente para escritórios dessa área. */
-    { id:"atuacao_trabalhista", type:"single", title:"Na área trabalhista, o escritório representa:",
-      options:[
-        {ic:"👷", t:"Reclamantes (trabalhadores)", s:0, next:"desafio"},
-        {ic:"🏢", t:"Reclamadas (empresas)",      s:0, next:"desafio"}
-      ] },
-
-    /* 3 — Desafio */
+    /* 2 — Desafio */
     { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
       options:[
         {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"responsavel_atendimento"},
@@ -523,7 +518,11 @@ const CONFIG = {
         btn.onclick = ()=>{
           host.querySelectorAll('.opt').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel');
           const opt=step.options[+btn.dataset.i];
-          lead.respostas[step.id]=opt.t;
+          lead.respostas[step.id]=opt.areaValue||opt.t;
+          if(step.id==='area_atuacao'){
+            if(opt.perfilTrabalhista) lead.respostas.atuacao_trabalhista=opt.perfilTrabalhista;
+            else delete lead.respostas.atuacao_trabalhista;
+          }
           lead.pts[step.id]=opt.s||0;
           lead.kills[step.id]=opt.kill===true;   // kill switch → opt.next é uma tela terminal type:"end"
           const isSubmit = step.submit || opt.submit===true;
@@ -608,11 +607,12 @@ const CONFIG = {
   function goBack(){
     // limpa a resposta do step que está sendo deixado para evitar dados antigos no WhatsApp e no payload
     if(currentId){ delete lead.respostas[currentId]; delete lead.pts[currentId]; delete lead.kills[currentId]; }
+    if(currentId==='area_atuacao') delete lead.respostas.atuacao_trabalhista;
     const prev=stepHistory.pop(); if(prev) render(prev); else renderWelcome();
   }
 
   function updateProgress(){
-    const total = CONFIG.steps.filter(s=>s.type!=='end').length - (lead.respostas.area_atuacao==='Trabalhista' ? 0 : 1); // pergunta condicional
+    const total = CONFIG.steps.filter(s=>s.type!=='end').length;   // só as telas do caminho principal (terminais não contam)
     setProg(Math.min(96, Math.round((stepHistory.length+1)/total*100)));
   }
 
