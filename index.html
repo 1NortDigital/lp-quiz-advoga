@@ -271,13 +271,13 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → área → desafio → atendimento → investimento → contato → fim.
+  /* FLUXO: Welcome → área → [atuação trabalhista] → desafio → atendimento → investimento → contato → fim.
      Área "Outra", orçamento de anúncios abaixo de R$ 1.200 e abandonos saem sem gerar lead. */
   steps: [
     /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
     { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
       options:[
-        {ic:"⚖️", t:"Trabalhista",    s:0, next:"desafio"},
+        {ic:"⚖️", t:"Trabalhista",    s:0, next:"atuacao_trabalhista"},
         {ic:"🧓", t:"Previdenciário", s:0, next:"desafio"},
         {ic:"🏦", t:"Bancário",       s:0, next:"desafio"},
         {ic:"🧾", t:"Tributário",     s:0, next:"desafio"},
@@ -285,7 +285,15 @@ const CONFIG = {
         {ic:"📂", t:"Outra",          s:0, next:"nurture_area", kill:true}
       ] },
 
-    /* 2 — Desafio */
+    /* 2 — Perfil trabalhista: aparece somente para escritórios dessa área. */
+    { id:"atuacao_trabalhista", type:"single", title:"Na área trabalhista, o escritório representa:",
+      options:[
+        {ic:"👷", t:"Reclamantes (trabalhadores)", s:0, next:"desafio"},
+        {ic:"🏢", t:"Reclamadas (empresas)",      s:0, next:"desafio"},
+        {ic:"⚖️", t:"Ambos os lados",             s:0, next:"desafio"}
+      ] },
+
+    /* 3 — Desafio */
     { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
       options:[
         {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"responsavel_atendimento"},
@@ -605,7 +613,7 @@ const CONFIG = {
   }
 
   function updateProgress(){
-    const total = CONFIG.steps.filter(s=>s.type!=='end').length;   // só as telas do caminho principal (terminais não contam)
+    const total = CONFIG.steps.filter(s=>s.type!=='end').length - (lead.respostas.area_atuacao==='Trabalhista' ? 0 : 1); // pergunta condicional
     setProg(Math.min(96, Math.round((stepHistory.length+1)/total*100)));
   }
 
@@ -655,7 +663,7 @@ const CONFIG = {
       pagina:CONFIG.pagina, event_id:eventId, ref:refCode,
       nome:lead.nome||'', telefone:lead.telefone||'', email:lead.email||'', cidade:lead.cidade||'',
       // respostas principais também no topo (colunas da planilha / CRM) — o objeto completo segue em `respostas`
-      area_atuacao:r.area_atuacao||'', faturamento:r.faturamento||'', desafio:r.desafio||'',
+      area_atuacao:r.area_atuacao||'', atuacao_trabalhista:r.atuacao_trabalhista||'', faturamento:r.faturamento||'', desafio:r.desafio||'',
       responsavel_atendimento:r.responsavel_atendimento||'', investimento:r.investimento||'',
       papel:lead.papel, qualificado:lead.qualified===true,
       score:lead.score, top_tier:lead.top===true,
@@ -701,6 +709,7 @@ const CONFIG = {
     const linhas = [ px(CONFIG.whatsapp.msg||'') ];
     const diag = [];
     if(r.area_atuacao)      diag.push('• Área de atuação: ' + r.area_atuacao);
+    if(r.atuacao_trabalhista) diag.push('• Atuação trabalhista: ' + r.atuacao_trabalhista);
     if(r.faturamento)       diag.push('• Faturamento médio: ' + r.faturamento);
     if(r.desafio)           diag.push('• Maior desafio: ' + r.desafio);
     if(r.responsavel_atendimento) diag.push('• Atendimento dos leads: ' + r.responsavel_atendimento);
