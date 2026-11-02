@@ -208,9 +208,9 @@ const CONFIG = {
   valorTop: 100,
   currency: "BRL",
 
-  // QUALIFICAÇÃO: área "Outra" e investimento abaixo de R$ 1.200 são desqualificados.
+  // QUALIFICAÇÃO: investimento abaixo de R$ 1.200/mês em anúncios não conta como lead qualificado.
   // Todas as perguntas vêm antes do contato. Só quem conclui o quiz e preenche nome/WhatsApp é enviado.
-  // TOP = consegue investir a partir de R$ 1.200 somente em anúncios.
+  // TOP = consegue investir a partir de R$ 1.200/mês somente em anúncios.
   qualifyThreshold: 0,    // todo lead que chega ao contato é qualificado (comercial filtra)
 
   // WHATSAPP — lead qualificado cai direto na conversa com mensagem pronta.
@@ -271,48 +271,26 @@ const CONFIG = {
     ]
   },
 
-  /* FLUXO: Welcome → área → desafio → atendimento → investimento → contato → fim.
-     Área "Outra", orçamento de anúncios abaixo de R$ 1.200 e abandonos saem sem gerar lead. */
+  /* FLUXO: Welcome → perfil → investimento → contato → fim.
+     Quem não consegue investir R$ 1.200/mês em anúncios segue pro WhatsApp, mas NÃO conta como lead qualificado. */
   steps: [
-    /* 1 — Área de atuação. "Outra" = kill switch → tela terminal nurture_area */
-    { id:"area_atuacao", type:"single", title:"Qual é a principal área de atuação do escritório?",
+    /* 1 — Perfil do advogado */
+    { id:"perfil", type:"single", title:"Qual opção se encaixa na sua realidade hoje?",
       options:[
-        {ic:"👷", t:"Trabalhista — Reclamante",     areaValue:"Trabalhista", perfilTrabalhista:"Reclamante", s:0, next:"desafio"},
-        {ic:"🏢", t:"Trabalhista — Reclamada",      areaValue:"Trabalhista", perfilTrabalhista:"Reclamada",  s:0, next:"desafio"},
-        {ic:"🧓", t:"Previdenciário", s:0, next:"desafio"},
-        {ic:"🏦", t:"Bancário",       s:0, next:"desafio"},
-        {ic:"🧾", t:"Tributário",     s:0, next:"desafio"},
-        {ic:"🏢", t:"Empresarial",    s:0, next:"desafio"},
-        {ic:"📂", t:"Outra",          s:0, next:"nurture_area", kill:true}
+        {ic:"👤", t:"Advogado autônomo",   s:0, next:"investimento"},
+        {ic:"🏢", t:"Sócio de escritório", s:0, next:"investimento"}
       ] },
 
-    /* 2 — Desafio */
-    { id:"desafio", type:"single", image:"imagens/desafio.jpg", title:"Qual é o maior desafio do escritório hoje?",
-      options:[
-        {ic:"🤝",t:"Dependo principalmente de indicações",                   s:0, next:"responsavel_atendimento"},
-        {ic:"🎯",t:"Recebo Leads, mas poucos viram contratos",               s:0, next:"responsavel_atendimento"},
-        {ic:"⏳",t:"Falta estrutura para atender e fazer follow-up",          s:0, next:"responsavel_atendimento"},
-        {ic:"📈",t:"Já tenho um processo e quero escalar com previsibilidade", s:0, next:"responsavel_atendimento"}
-      ] },
-
-    /* 3 — Responsável pelo atendimento dos novos leads */
-    { id:"responsavel_atendimento", type:"single", title:"Quem ficará responsável pelo atendimento dos novos leads?",
-      options:[
-        {ic:"👤",t:"Eu mesmo",                                         s:0, next:"investimento"},
-        {ic:"🤝",t:"Meu sócio / outro advogado",                       s:0, next:"investimento"},
-        {ic:"🧑‍💼",t:"Secretária / estagiário / equipe de atendimento", s:0, next:"investimento"}
-      ] },
-
-    /* 4 — Investimento: abaixo de R$ 1.200 segue pro WhatsApp, mas NÃO conta como lead qualificado (semConversao) */
+    /* 2 — Investimento: abaixo de R$ 1.200/mês segue pro WhatsApp, mas NÃO conta como lead qualificado (semConversao) */
     { id:"investimento", type:"single", image:"imagens/time.jpg",
-      title:"Seu escritório consegue investir de R$ 1.200 a R$ 1.500 por mês somente em anúncios, sem incluir a mão de obra?",
+      title:"Você consegue investir de R$ 1.200 a R$ 2.000 por mês somente em tráfego, sem incluir a mão de obra?",
       options:[
-        {t:"Sim, consigo investir nessa faixa",                     s:2, next:"contato"},
-        {t:"Consigo investir acima de R$ 1.500",                    s:3, next:"contato"},
-        {t:"Não consigo investir pelo menos R$ 1.200 no momento",   s:0, next:"contato", semConversao:true}
+        {t:"Sim, consigo investir nessa faixa",                    s:2, next:"contato"},
+        {t:"Consigo investir acima de R$ 2.000",                   s:3, next:"contato"},
+        {t:"Não consigo investir pelo menos R$ 1.200 no momento",  s:0, next:"contato", semConversao:true}
       ] },
 
-    /* 5 — Contato final: sem parcial. Nome e WhatsApp válidos são obrigatórios antes do envio. */
+    /* 3 — Contato final: sem parcial. Nome e WhatsApp válidos são obrigatórios antes do envio. */
     { id:"contato", type:"contact", fireContato:true, submit:true, contactPicker:true,
       title:"Último passo 👋", sub:"Pra onde enviamos seu diagnóstico?",
       fields:[
@@ -321,9 +299,6 @@ const CONFIG = {
       ], trust:true },
 
     /* Telas terminais de desqualificação */
-    { id:"nurture_area", type:"end", terminal:true,
-      title:"Obrigado pelo interesse 🙏",
-      sub:"Hoje a 1Nort atende escritórios das áreas empresarial, previdenciária, trabalhista, bancária e tributária, e a gente prefere ser transparente a prometer resultado numa área que ainda não dominamos.<br><br>Se o escritório também atuar em uma dessas áreas, volta aqui e refaz o diagnóstico." },
     { id:"nurture", type:"end", terminal:true, saveDisqualified:true,
       title:"Valeu pela honestidade 🙌",
       sub:"Com menos de R$ 1.200/mês para investir em anúncios, a parceria com a 1Nort ainda não vai performar — o algoritmo não tem volume para aprender e a gente prefere te falar isso antes de vender.<br><br>Quando o momento chegar, volta aqui e refaz o diagnóstico." }
@@ -338,9 +313,7 @@ const CONFIG = {
   const fill = document.getElementById("progFill");
   const stepById = {}; CONFIG.steps.forEach(s=>stepById[s.id]=s);
   const STEP_COMPLETE_EVENTS = {
-    area_atuacao: "AreaComplete",
-    desafio: "DesafioComplete",
-    responsavel_atendimento: "AtendimentoComplete",
+    perfil: "PerfilComplete",
     investimento: "InvestimentoComplete"
   };
   const FUNNEL_EVENT_NAMES = new Set(["QuizStart", "ContactView", ...Object.values(STEP_COMPLETE_EVENTS)]);
@@ -625,7 +598,7 @@ const CONFIG = {
     lead.killed   = killed;
     lead.lowBudget= path.some(id=>lead.soft[id]===true);       // ex.: não consegue investir o mínimo em anúncios
     lead.qualified= !killed && !lead.lowBudget && s >= CONFIG.qualifyThreshold;   // kill switch e baixo investimento derrubam mesmo com score alto
-    // TOP = consegue investir ao menos R$ 1.200 somente em anúncios.
+    // TOP = consegue investir ao menos R$ 1.200/mês somente em anúncios.
     lead.top      = lead.qualified && (lead.pts.investimento||0) >= 2;
     return s;
   }
@@ -663,7 +636,7 @@ const CONFIG = {
       pagina:CONFIG.pagina, event_id:eventId, ref:refCode,
       nome:lead.nome||'', telefone:lead.telefone||'', email:lead.email||'', cidade:lead.cidade||'',
       // respostas principais também no topo (colunas da planilha / CRM) — o objeto completo segue em `respostas`
-      area_atuacao:r.area_atuacao||'', atuacao_trabalhista:r.atuacao_trabalhista||'', faturamento:r.faturamento||'', desafio:r.desafio||'',
+      perfil:r.perfil||'', area_atuacao:r.area_atuacao||'', atuacao_trabalhista:r.atuacao_trabalhista||'', faturamento:r.faturamento||'', desafio:r.desafio||'',
       responsavel_atendimento:r.responsavel_atendimento||'', investimento:r.investimento||'',
       papel:lead.papel, qualificado:lead.qualified===true,
       score:lead.score, top_tier:lead.top===true,
@@ -709,6 +682,7 @@ const CONFIG = {
     const r = lead.respostas || {};
     const linhas = [ px(CONFIG.whatsapp.msg||'') ];
     const diag = [];
+    if(r.perfil)            diag.push('• Perfil: ' + r.perfil);
     if(r.area_atuacao)      diag.push('• Área de atuação: ' + r.area_atuacao);
     if(r.atuacao_trabalhista) diag.push('• Atuação trabalhista: ' + r.atuacao_trabalhista);
     if(r.faturamento)       diag.push('• Faturamento médio: ' + r.faturamento);
